@@ -8,12 +8,9 @@ import { motion } from "framer-motion";
 import { Loader2, AlertTriangle, CheckCircle, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
-import { useAuth } from "@/hooks/useAuth"; // Assuming this path
-import { useRouter } from "next/navigation"; // Assuming this path
 
 export default function CVGeneratorPage() {
-    const { user, isLoading: authLoading } = useAuth(); // Renamed to avoid partial overlap with other loading states if any
-    const router = useRouter();
+    const { user, isLoading: authLoading } = useAuth();
     const [description, setDescription] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [cvData, setCvData] = useState<CVData | null>(null);
