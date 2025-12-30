@@ -11,6 +11,7 @@ import { Navbar } from "@/components/Navbar";
 
 export default function CVGeneratorPage() {
     const { user, isLoading: authLoading } = useAuth();
+    const router = useRouter();
     const [description, setDescription] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [cvData, setCvData] = useState<CVData | null>(null);
