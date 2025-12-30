@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   title: "RaffiTech AI - Premium Conversational Intelligence",
   description: "Experience the next generation of AI with RaffiTech. Fast, efficient, and elite.",
   verification: {
-    google: "Fz4GzPlz6a24zP5cia0VpEKDxZfajYT6TF9h7jUFYw4",
+    google: "Y0lRT8f8Gggxpryg3UanhCDm7UizQMYcpqmLLyTqmqM",
   },
   manifest: "/manifest.json",
 };
