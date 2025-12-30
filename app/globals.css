@@ -1,26 +1,117 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #000000;
+  --foreground: #ffffff;
+
+  /* Deep Red */
+  --primary-red: #ff0000;
+  --secondary-red: #8a0000;
+
+  /* Glass */
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(255, 0, 0, 0.05);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-primary-red: var(--primary-red);
+  --color-secondary-red: var(--secondary-red);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-plus-jakarta);
+  --font-display: var(--font-space-grotesk);
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Consolas, monospace;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Display font utility */
+.font-display {
+  font-family: var(--font-display);
+}
+
+/* Custom Glass Utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.glass-card {
+  background: linear-gradient(145deg, rgba(20, 20, 20, 0.9), rgba(0, 0, 0, 0.9));
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 0, 0, 0.2);
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.1);
+}
+
+.text-gradient {
+  background: linear-gradient(to right, #ff0000, #ff4d4d);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Prose styling for dark mode AI responses */
+.prose-invert strong {
+  color: #fff !important;
+}
+
+.prose-invert p {
+  margin: 0.5rem 0;
+}
+
+.prose-invert ul,
+.prose-invert ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.prose-invert li {
+  margin: 0.25rem 0;
+}
+
+.prose-invert code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+.prose-invert pre {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+/* Gradient animation for premium text */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  animation: gradient 4s ease infinite;
+}
+
+/* Premium glow effect */
+.glow-red {
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
 }
