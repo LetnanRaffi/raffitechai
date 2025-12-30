@@ -32,6 +32,10 @@ export function Navbar() {
                 <Link href="/chat" className="text-sm text-gray-300 hover:text-white transition-colors">
                     Chatbot
                 </Link>
+                <Link href="/cv" className="text-sm text-gray-300 hover:text-white transition-colors flex items-center gap-1">
+                    <span className="bg-red-600/20 text-red-500 text-[10px] font-bold px-1.5 py-0.5 rounded border border-red-500/30">NEW</span>
+                    CV Generator
+                </Link>
 
                 <div className="flex items-center gap-3">
                     <Link href="/login">

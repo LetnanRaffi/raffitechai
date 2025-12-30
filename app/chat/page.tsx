@@ -71,7 +71,7 @@ export default function ChatPage() {
         { icon: Code, text: "Write a Python script for data analysis" },
         { icon: FileText, text: "Draft a professional email response" },
         { icon: Lightbulb, text: "Brainstorm ideas for a project" },
-        { icon: PenTool, text: "Help me create content" },
+        { icon: Sparkles, text: "Build a Professional CV with AI" },
     ]
 
     const scrollToBottom = () => {
@@ -384,7 +384,7 @@ export default function ChatPage() {
                     </button>
                 </div>
 
-                <div className="p-3">
+                <div className="p-3 space-y-2">
                     <button
                         onClick={() => { handleNewChat(); setSidebarOpen(false) }}
                         className="w-full flex items-center gap-2 px-4 py-3 bg-red-600/10 hover:bg-red-600/20 border border-red-500/20 rounded-xl text-sm font-medium text-red-100 transition-colors"
@@ -392,6 +392,13 @@ export default function ChatPage() {
                         <Plus size={16} />
                         New Chat
                     </button>
+                    <Link
+                        href="/cv"
+                        className="w-full flex items-center gap-2 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-sm font-medium text-gray-200 transition-colors"
+                    >
+                        <FileText size={16} />
+                        CV Mode
+                    </Link>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-3 space-y-1">
@@ -519,7 +526,13 @@ export default function ChatPage() {
                                 {suggestions.map((sug, idx) => (
                                     <motion.button
                                         key={idx}
-                                        onClick={() => handleSend(sug.text)}
+                                        onClick={() => {
+                                            if (sug.text === "Build a Professional CV with AI") {
+                                                router.push("/cv");
+                                            } else {
+                                                handleSend(sug.text);
+                                            }
+                                        }}
                                         whileHover={{ scale: 1.02, y: -2 }}
                                         whileTap={{ scale: 0.98 }}
                                         className="relative glass p-4 sm:p-5 rounded-2xl border border-white/10 text-left transition-all duration-300 hover:border-red-500/30 hover:shadow-[0_0_30px_rgba(255,0,0,0.1)] group overflow-hidden"

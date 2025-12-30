@@ -18,6 +18,10 @@ const plusJakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "RaffiTech AI - Premium Conversational Intelligence",
   description: "Experience the next generation of AI with RaffiTech. Fast, efficient, and elite.",
+  verification: {
+    google: "Fz4GzPlz6a24zP5cia0VpEKDxZfajYT6TF9h7jUFYw4",
+  },
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
