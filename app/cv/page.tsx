@@ -1,13 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 import { CVPreview, CVData } from "@/components/CVPreview";
 import { motion } from "framer-motion";
 import { Loader2, AlertTriangle, CheckCircle, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
+import { useAuth } from "@/hooks/useAuth"; // Assuming this path
+import { useRouter } from "next/navigation"; // Assuming this path
 
 export default function CVGeneratorPage() {
+    const { user, isLoading: authLoading } = useAuth(); // Renamed to avoid partial overlap with other loading states if any
+    const router = useRouter();
     const [description, setDescription] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [cvData, setCvData] = useState<CVData | null>(null);
@@ -16,13 +22,29 @@ export default function CVGeneratorPage() {
     const [quotaCount, setQuotaCount] = useState(0);
 
     useEffect(() => {
+        if (!authLoading && !user) {
+            router.push("/login");
+            return;
+        }
+
         // Check quota on load
         const count = parseInt(localStorage.getItem("cv_generate_count") || "0");
         setQuotaCount(count);
         if (count >= 5) {
             setQuotaReached(true);
         }
-    }, []);
+    }, [user, authLoading, router]);
+
+    if (authLoading || !user) {
+        return (
+            <div className="flex h-screen bg-black items-center justify-center">
+                <div className="flex items-center gap-2 text-gray-400">
+                    <Loader2 className="animate-spin text-red-400" size={20} />
+                    <span>Checking access...</span>
+                </div>
+            </div>
+        )
+    }
 
     const handleGenerate = async () => {
         if (!description.trim()) return;
@@ -132,8 +154,8 @@ export default function CVGeneratorPage() {
                                         onClick={handleGenerate}
                                         disabled={isLoading || !description.trim()}
                                         className={`w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all ${isLoading || !description.trim()
-                                                ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
-                                                : "bg-white text-black hover:bg-gray-200 hover:scale-[1.02]"
+                                            ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
+                                            : "bg-white text-black hover:bg-gray-200 hover:scale-[1.02]"
                                             }`}
                                     >
                                         {isLoading ? (

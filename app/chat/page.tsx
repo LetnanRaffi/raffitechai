@@ -655,9 +655,19 @@ export default function ChatPage() {
                                     <button
                                         onClick={() => fileInputRef.current?.click()}
                                         className="p-2.5 sm:p-3 hover:bg-white/10 rounded-xl transition-all text-gray-400 hover:text-white shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center"
+                                        title="Upload File"
                                     >
                                         <Upload size={20} />
                                     </button>
+
+                                    <Link href="/cv">
+                                        <button
+                                            className="p-2.5 sm:p-3 hover:bg-white/10 rounded-xl transition-all text-gray-400 hover:text-white shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center group/cv"
+                                            title="CV Generator Mode"
+                                        >
+                                            <FileText size={20} className="group-hover/cv:text-red-400 transition-colors" />
+                                        </button>
+                                    </Link>
 
                                     <textarea
                                         ref={textareaRef}
