@@ -15,26 +15,27 @@ export interface TierConfig {
 /**
  * Model priority list for each tier
  * Models are tried in order - first successful response wins
- * Updated: 2026-01-06 - Optimized for power & cost efficiency
+ * Updated: 2026-01-06 - Prioritize stability & availability
  */
 export const TIER_MODELS: Record<RaffiTechTier, string[]> = {
     "RaffiTech Free": [
-        // Powerful FREE models (high quality, no cost)
-        "moonshotai/kimi-k2:free",                    // Very powerful, recommended
+        // Most stable free models (smaller = more available)
+        "google/gemma-3-4b-it:free",                  // Small, very stable
+        "qwen/qwen3-4b:free",                         // Small, fast
+        "google/gemma-3-12b-it:free",                 // Medium, stable
+        "mistralai/mistral-small-3.1-24b-instruct:free", // Good quality
+        "qwen/qwen3-coder:free",                      // For code
+        "google/gemini-2.0-flash-exp:free",           // Fast Google
+        // Larger free models (may have more rate limits)
         "deepseek/deepseek-r1-0528:free",             // Great reasoning
-        "meta-llama/llama-3.3-70b-instruct:free",    // Large & capable
-        "qwen/qwen3-coder:free",                      // Excellent for code
-        "google/gemini-2.0-flash-exp:free",           // Fast Google model
-        "mistralai/mistral-small-3.1-24b-instruct:free", // Balanced
-        // Backup free models
+        "moonshotai/kimi-k2:free",                    // Very powerful
         "google/gemma-3-27b-it:free",                 // Good quality
-        "nousresearch/hermes-3-llama-3.1-405b:free", // Massive 405B
-        "cognitivecomputations/dolphin-mistral-24b-venice-edition:free"
+        "meta-llama/llama-3.3-70b-instruct:free",    // Large
     ],
     "RaffiTech Standard": [
         // Cost-effective premium models
-        "deepseek/deepseek-v3.2",                     // Best value, very capable
-        "bytedance-seed/seed-1.6-flash",              // Ultra fast responses
+        "deepseek/deepseek-v3.2",                     // Best value
+        "bytedance-seed/seed-1.6-flash",              // Ultra fast
         "minimax/minimax-m2.1",                       // Great reasoning
         "qwen/qwen3-max",                             // Powerful Qwen
         "z-ai/glm-4.7",                               // Latest GLM
@@ -46,8 +47,8 @@ export const TIER_MODELS: Record<RaffiTechTier, string[]> = {
         "anthropic/claude-sonnet-4.5",                // Latest Claude Sonnet
         "openai/gpt-5.2-pro",                         // GPT Pro variant
         "google/gemini-3-pro-preview",                // Latest Gemini Pro
-        "anthropic/claude-opus-4.5",                  // Claude Opus (most capable)
-        "deepseek/deepseek-v3.2-speciale"             // DeepSeek Special Edition
+        "anthropic/claude-opus-4.5",                  // Claude Opus
+        "deepseek/deepseek-v3.2-speciale"             // DeepSeek Special
     ]
 }
 

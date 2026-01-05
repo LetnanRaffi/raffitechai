@@ -59,12 +59,15 @@ export async function callOpenRouter(
     const apiKey = process.env.OPENROUTER_API_KEY
 
     if (!apiKey) {
+        console.error("[OpenRouter] API key not found in environment")
         return {
             success: false,
             error: "OpenRouter API key not configured",
             retryable: false
         }
     }
+
+    console.log(`[OpenRouter] Calling model: ${model}`)
 
     const controller = new AbortController()
     const timeout = options?.timeout ?? 30000
@@ -77,7 +80,7 @@ export async function callOpenRouter(
             headers: {
                 "Authorization": `Bearer ${apiKey}`,
                 "Content-Type": "application/json",
-                "HTTP-Referer": "https://raffitech.ai",
+                "HTTP-Referer": "https://raffitechai.vercel.app",
                 "X-Title": "RaffiTech AI"
             },
             body: JSON.stringify({
@@ -95,6 +98,8 @@ export async function callOpenRouter(
             const errorData = await response.json().catch(() => ({})) as OpenRouterError
             const isRetryable = RETRYABLE_ERROR_CODES.includes(response.status)
 
+            console.error(`[OpenRouter] Error for ${model}: ${response.status} - ${errorData.error?.message || 'Unknown'}`)
+
             return {
                 success: false,
                 error: errorData.error?.message || `API error: ${response.status}`,
@@ -103,6 +108,7 @@ export async function callOpenRouter(
         }
 
         const data = await response.json() as OpenRouterResponse
+        console.log(`[OpenRouter] Success with model: ${data.model || model}`)
         return { success: true, data }
 
     } catch (error) {
