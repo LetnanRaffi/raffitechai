@@ -2,11 +2,12 @@
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Send, Menu, Plus, MessageSquare, X, Settings, Code, FileText, Lightbulb, PenTool, Mic, MicOff, AlertCircle, Sparkles, LogOut, Lock, Upload, Image as ImageIcon, Trash2 } from "lucide-react"
+import { Send, Menu, Plus, MessageSquare, X, Settings, Code, FileText, Lightbulb, Mic, MicOff, AlertCircle, Sparkles, LogOut, Upload, Image as ImageIcon, Trash2, Languages, HelpCircle, Wrench, ListChecks } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import ReactMarkdown from "react-markdown"
 import { TierSelector, TierType } from "@/components/TierSelector"
+import { PersonaSelector, PersonaType } from "@/components/PersonaSelector"
 import { CodeBlock, InlineCode } from "@/components/CodeBlock"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
@@ -29,7 +30,16 @@ interface Message {
     content: string
     timestamp: Date
     model?: string
+    isTyping?: boolean // For typing animation
 }
+
+// Quick action definitions
+const QUICK_ACTIONS = [
+    { id: "summarize", icon: ListChecks, label: "Summarize", prompt: "Summarize the following in bullet points:" },
+    { id: "translate", icon: Languages, label: "Translate", prompt: "Translate the following to English (if Indonesian) or Indonesian (if English):" },
+    { id: "eli5", icon: HelpCircle, label: "ELI5", prompt: "Explain Like I'm 5:" },
+    { id: "fix", icon: Wrench, label: "Fix Code", prompt: "Fix and improve this code:" },
+]
 
 export default function ChatPage() {
     const { user, isLoading, signOut } = useAuth()
@@ -42,6 +52,16 @@ export default function ChatPage() {
     const [isTyping, setIsTyping] = useState(false)
     const [currentModel, setCurrentModel] = useState<string | null>(null)
     const [error, setError] = useState<string | null>(null)
+
+    // NEW: Persona state
+    const [selectedPersona, setSelectedPersona] = useState<PersonaType>("raffi")
+
+    // NEW: Typing animation state
+    const [displayedContent, setDisplayedContent] = useState<string>("")
+    const [isAnimatingResponse, setIsAnimatingResponse] = useState(false)
+
+    // NEW: Quick actions visibility
+    const [showQuickActions, setShowQuickActions] = useState(false)
 
     // User tier state
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
@@ -136,7 +156,7 @@ export default function ChatPage() {
 
     useEffect(() => {
         scrollToBottom()
-    }, [messages, isTyping])
+    }, [messages, isTyping, displayedContent])
 
     // Auto-resize textarea
     useEffect(() => {
@@ -198,6 +218,30 @@ export default function ChatPage() {
         setUploadedFiles(prev => prev.filter((_, i) => i !== index))
     }
 
+    // NEW: Typing animation effect
+    const animateTyping = useCallback((fullContent: string, messageId: string) => {
+        setIsAnimatingResponse(true)
+        let currentIndex = 0
+        const chunkSize = 3 // Characters per update
+        const speed = 15 // ms between updates
+
+        const typeInterval = setInterval(() => {
+            if (currentIndex < fullContent.length) {
+                currentIndex = Math.min(currentIndex + chunkSize, fullContent.length)
+                setMessages(prev => prev.map(msg =>
+                    msg.id === messageId
+                        ? { ...msg, content: fullContent.slice(0, currentIndex) }
+                        : msg
+                ))
+            } else {
+                clearInterval(typeInterval)
+                setIsAnimatingResponse(false)
+            }
+        }, speed)
+
+        return () => clearInterval(typeInterval)
+    }, [])
+
     // Show loading while checking auth
     if (isLoading) {
         return (
@@ -210,8 +254,9 @@ export default function ChatPage() {
         )
     }
 
-    const handleSend = async (text: string = input) => {
-        if (!text.trim() || isTyping || !user) return
+    const handleSend = async (text: string = input, quickActionPrefix?: string) => {
+        const messageText = quickActionPrefix ? `${quickActionPrefix} ${text}` : text
+        if (!messageText.trim() || isTyping || !user) return
 
         // Check tier restriction
         if (!isTierAllowed(selectedTier)) {
@@ -234,13 +279,14 @@ export default function ChatPage() {
         const userMessage: Message = {
             id: generateId(),
             role: "user",
-            content: text.trim(),
+            content: messageText.trim(),
             timestamp: new Date()
         }
 
         setInput("")
         setUploadedFiles([])
         setError(null)
+        setShowQuickActions(false)
         if (textareaRef.current) {
             textareaRef.current.style.height = "auto"
         }
@@ -249,11 +295,11 @@ export default function ChatPage() {
 
         // Save user message to DB
         if (sessionId && user) {
-            await saveMessage(sessionId, user.id, "user", text.trim())
+            await saveMessage(sessionId, user.id, "user", messageText.trim())
 
             // Update session title from first message
             if (messages.length === 0) {
-                const title = generateTitleFromMessage(text.trim())
+                const title = generateTitleFromMessage(messageText.trim())
                 await updateSessionTitle(sessionId, title)
                 setChatSessions(prev => prev.map(s =>
                     s.id === sessionId ? { ...s, title } : s
@@ -272,8 +318,9 @@ export default function ChatPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message: text.trim(),
+                    message: messageText.trim(),
                     tier: selectedTier,
+                    persona: selectedPersona,
                     conversationHistory
                 })
             })
@@ -301,24 +348,28 @@ export default function ChatPage() {
             const responseContent = data.message?.trim() ||
                 (data.error ? `Error: ${data.error}` : "I apologize, but I couldn't generate a response. Please try again.")
 
+            const assistantMessageId = generateId()
             const assistantMessage: Message = {
-                id: generateId(),
+                id: assistantMessageId,
                 role: "assistant",
-                content: responseContent,
+                content: "", // Start empty for typing animation
                 timestamp: new Date(),
                 model: data.model
             }
 
             setMessages(prev => [...prev, assistantMessage])
+            setIsTyping(false)
 
-            // Save assistant message to DB
+            // Animate typing effect
+            animateTyping(responseContent, assistantMessageId)
+
+            // Save assistant message to DB (full content)
             if (sessionId && user) {
                 await saveMessage(sessionId, user.id, "assistant", responseContent, data.model)
             }
         } catch (err) {
             console.error('Chat error:', err)
             setError('Failed to send message. Please try again.')
-        } finally {
             setIsTyping(false)
         }
     }
@@ -351,6 +402,15 @@ export default function ChatPage() {
         setChatSessions(prev => prev.filter(s => s.id !== sessionId))
         if (currentSessionId === sessionId) {
             handleNewChat()
+        }
+    }
+
+    // Handle quick action
+    const handleQuickAction = (action: typeof QUICK_ACTIONS[0]) => {
+        if (input.trim()) {
+            handleSend(input, action.prompt)
+        } else {
+            setError("Please enter some text first to use quick actions")
         }
     }
 
@@ -464,7 +524,7 @@ export default function ChatPage() {
             {/* Main Area */}
             <main className="flex-1 flex flex-col w-full min-w-0">
                 {/* Header */}
-                <header className="h-14 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-white/5 bg-black/50 backdrop-blur-sm">
+                <header className="h-14 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-white/5 bg-black/50 backdrop-blur-sm gap-2">
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setSidebarOpen(true)}
@@ -480,12 +540,20 @@ export default function ChatPage() {
                         </button>
                     </div>
 
-                    <TierSelector
-                        selectedTier={selectedTier}
-                        onTierChange={handleTierChange}
-                        disabled={isTyping}
-                        userTier={userProfile?.tier as TierType}
-                    />
+                    {/* Tier & Persona Selectors */}
+                    <div className="flex items-center gap-2">
+                        <PersonaSelector
+                            selectedPersona={selectedPersona}
+                            onPersonaChange={setSelectedPersona}
+                            disabled={isTyping || isAnimatingResponse}
+                        />
+                        <TierSelector
+                            selectedTier={selectedTier}
+                            onTierChange={handleTierChange}
+                            disabled={isTyping}
+                            userTier={userProfile?.tier as TierType}
+                        />
+                    </div>
 
                     {/* Current model indicator */}
                     {currentModel && (
@@ -636,6 +704,31 @@ export default function ChatPage() {
                         </div>
                     )}
 
+                    {/* Quick Actions Bar */}
+                    <AnimatePresence>
+                        {showQuickActions && input.trim() && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 10 }}
+                                className="shrink-0 px-4 py-2 border-t border-white/5"
+                            >
+                                <div className="max-w-3xl mx-auto flex gap-2 flex-wrap">
+                                    {QUICK_ACTIONS.map((action) => (
+                                        <button
+                                            key={action.id}
+                                            onClick={() => handleQuickAction(action)}
+                                            className="flex items-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 rounded-lg text-xs font-medium text-gray-300 transition-colors border border-white/5 hover:border-white/10"
+                                        >
+                                            <action.icon size={14} className="text-red-400" />
+                                            {action.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
                     {/* Input Area - Premium Design */}
                     <div className="shrink-0 p-3 sm:p-4 border-t border-white/5 bg-gradient-to-t from-black via-black/95 to-transparent">
                         <div className="max-w-3xl mx-auto">
@@ -660,14 +753,17 @@ export default function ChatPage() {
                                         <Upload size={20} />
                                     </button>
 
-                                    <Link href="/cv">
-                                        <button
-                                            className="p-2.5 sm:p-3 hover:bg-white/10 rounded-xl transition-all text-gray-400 hover:text-white shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center group/cv"
-                                            title="CV Generator Mode"
-                                        >
-                                            <FileText size={20} className="group-hover/cv:text-red-400 transition-colors" />
-                                        </button>
-                                    </Link>
+                                    {/* Quick Actions Toggle */}
+                                    <button
+                                        onClick={() => setShowQuickActions(!showQuickActions)}
+                                        className={`p-2.5 sm:p-3 rounded-xl transition-all shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center ${showQuickActions
+                                            ? 'bg-red-500/20 text-red-400'
+                                            : 'hover:bg-white/10 text-gray-400 hover:text-white'
+                                            }`}
+                                        title="Quick Actions"
+                                    >
+                                        <Sparkles size={20} />
+                                    </button>
 
                                     <textarea
                                         ref={textareaRef}
@@ -697,7 +793,7 @@ export default function ChatPage() {
 
                                     <button
                                         onClick={() => handleSend()}
-                                        disabled={!input.trim() || isTyping}
+                                        disabled={!input.trim() || isTyping || isAnimatingResponse}
                                         className="p-2.5 sm:p-3 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-600 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-xl transition-all shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center shadow-lg shadow-red-500/20 hover:shadow-red-500/30"
                                     >
                                         <Send size={18} className="sm:w-[20px] sm:h-[20px]" />

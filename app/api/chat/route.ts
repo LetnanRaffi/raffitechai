@@ -7,10 +7,12 @@ import { NextRequest, NextResponse } from "next/server"
 import { callWithFallback } from "@/lib/model-fallback"
 import { isValidTier, requiresSubscription, RaffiTechTier } from "@/lib/tier-config"
 import { ChatMessage } from "@/lib/openrouter"
+import { getPersonaSystemPrompt, PersonaType } from "@/components/PersonaSelector"
 
 interface ChatRequest {
     message: string
     tier?: string
+    persona?: PersonaType
     conversationHistory?: ChatMessage[]
 }
 
@@ -18,22 +20,15 @@ interface ChatResponse {
     tier: RaffiTechTier
     model: string | null
     message: string
+    persona?: PersonaType
     error?: string
     requiresUpgrade?: boolean
 }
 
-/**
- * System prompt for RaffiTech AI
- */
-const SYSTEM_PROMPT = `You are RaffiTech AI, a premium conversational AI assistant. 
-You are helpful, accurate, and professional. 
-You respond in a friendly but concise manner.
-You avoid making up information and admit when you don't know something.`
-
 export async function POST(request: NextRequest): Promise<NextResponse<ChatResponse>> {
     try {
         const body = await request.json() as ChatRequest
-        const { message, tier: requestedTier, conversationHistory = [] } = body
+        const { message, tier: requestedTier, persona = "raffi", conversationHistory = [] } = body
 
         // Validate message
         if (!message || typeof message !== "string" || message.trim().length === 0) {
@@ -65,9 +60,12 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChatRespo
             }, { status: 403 })
         }
 
+        // Get persona-specific system prompt
+        const systemPrompt = getPersonaSystemPrompt(persona)
+
         // Build messages array
         const messages: ChatMessage[] = [
-            { role: "system", content: SYSTEM_PROMPT },
+            { role: "system", content: systemPrompt },
             ...conversationHistory.slice(-10), // Keep last 10 messages for context
             { role: "user", content: message.trim() }
         ]
@@ -81,6 +79,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChatRespo
                 tier: result.tier,
                 model: null,
                 message: result.message,
+                persona,
                 error: "Service temporarily unavailable"
             }, { status: 503 })
         }
@@ -88,7 +87,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<ChatRespo
         return NextResponse.json({
             tier: result.tier,
             model: result.model,
-            message: result.message
+            message: result.message,
+            persona
         })
 
     } catch (error) {
@@ -111,3 +111,4 @@ export async function GET(): Promise<NextResponse> {
         { status: 405 }
     )
 }
+
