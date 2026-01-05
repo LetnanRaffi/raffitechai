@@ -15,44 +15,39 @@ export interface TierConfig {
 /**
  * Model priority list for each tier
  * Models are tried in order - first successful response wins
- * FREE models have :free suffix, they have separate rate limits
- * Updated: 2026-01-05 with verified available models
+ * Updated: 2026-01-06 - Optimized for power & cost efficiency
  */
 export const TIER_MODELS: Record<RaffiTechTier, string[]> = {
     "RaffiTech Free": [
-        // Primary FREE models (verified available on OpenRouter)
-        "google/gemma-3n-e4b-it:free",            // Google Gemma 3N - newest, stable
-        "moonshotai/kimi-k2:free",                // Kimi K2 - very capable
-        "deepseek/deepseek-r1-0528:free",         // DeepSeek R1 - reasoning
-        "qwen/qwen3-coder:free",                  // Qwen 3 Coder - great for code
-        "z-ai/glm-4.5-air:free",                  // GLM 4.5 Air - fast
-        "google/gemma-3n-e2b-it:free",            // Google Gemma 3N smaller
-        "openai/gpt-oss-20b:free",                // OpenAI OSS 20B
-        "tngtech/deepseek-r1t2-chimera:free",     // DeepSeek variant
-        // Backup FREE models
-        "xiaomi/mimo-v2-flash:free",              // Xiaomi flash
-        "nvidia/nemotron-nano-9b-v2:free",        // NVIDIA 9B
-        "allenai/olmo-3.1-32b-think:free",        // Allen AI 32B
-        "mistralai/devstral-2512:free",           // Mistral coding
-        "arcee-ai/trinity-mini:free",             // Arcee mini
-        // Ultra cheap fallback
-        "gryphe/mythomax-l2-13b"                  // $0.00006/1k tokens
+        // Powerful FREE models (high quality, no cost)
+        "moonshotai/kimi-k2:free",                    // Very powerful, recommended
+        "deepseek/deepseek-r1-0528:free",             // Great reasoning
+        "meta-llama/llama-3.3-70b-instruct:free",    // Large & capable
+        "qwen/qwen3-coder:free",                      // Excellent for code
+        "google/gemini-2.0-flash-exp:free",           // Fast Google model
+        "mistralai/mistral-small-3.1-24b-instruct:free", // Balanced
+        // Backup free models
+        "google/gemma-3-27b-it:free",                 // Good quality
+        "nousresearch/hermes-3-llama-3.1-405b:free", // Massive 405B
+        "cognitivecomputations/dolphin-mistral-24b-venice-edition:free"
     ],
     "RaffiTech Standard": [
-        "deepseek/deepseek-v3.2",                 // DeepSeek V3.2 - best value
-        "bytedance-seed/seed-1.6-flash",          // ByteDance - ultra fast
-        "minimax/minimax-m2.1",                   // MiniMax - great reasoning
-        "deepseek/deepseek-chat",                 // DeepSeek chat
-        "z-ai/glm-4.7",                           // GLM 4.7 - latest
-        "qwen/qwen3-vl-8b-instruct"               // Qwen 8B multimodal
+        // Cost-effective premium models
+        "deepseek/deepseek-v3.2",                     // Best value, very capable
+        "bytedance-seed/seed-1.6-flash",              // Ultra fast responses
+        "minimax/minimax-m2.1",                       // Great reasoning
+        "qwen/qwen3-max",                             // Powerful Qwen
+        "z-ai/glm-4.7",                               // Latest GLM
+        "mistralai/mistral-large-2512"                // Mistral Large
     ],
     "RaffiTech Pro": [
-        "anthropic/claude-sonnet-4",              // Claude Sonnet 4 - latest
-        "openai/gpt-4.1",                         // GPT-4.1 - latest
-        "deepseek/deepseek-r1",                   // DeepSeek R1 - best reasoning
-        "anthropic/claude-3.5-sonnet",            // Claude 3.5 Sonnet
-        "openai/gpt-4o",                          // GPT-4o
-        "google/gemini-2.5-flash"                 // Gemini 2.5 Flash
+        // Top-tier premium models
+        "openai/gpt-5.1",                             // Latest GPT
+        "anthropic/claude-sonnet-4.5",                // Latest Claude Sonnet
+        "openai/gpt-5.2-pro",                         // GPT Pro variant
+        "google/gemini-3-pro-preview",                // Latest Gemini Pro
+        "anthropic/claude-opus-4.5",                  // Claude Opus (most capable)
+        "deepseek/deepseek-v3.2-speciale"             // DeepSeek Special Edition
     ]
 }
 

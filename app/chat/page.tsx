@@ -2,13 +2,14 @@
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Send, Menu, Plus, MessageSquare, X, Settings, Code, FileText, Lightbulb, Mic, MicOff, AlertCircle, Sparkles, LogOut, Upload, Image as ImageIcon, Trash2, Languages, HelpCircle, Wrench, ListChecks } from "lucide-react"
+import { Send, Menu, Plus, MessageSquare, X, Settings, Code, FileText, Lightbulb, Mic, MicOff, AlertCircle, Sparkles, LogOut, Upload, Image as ImageIcon, Trash2, Languages, HelpCircle, Wrench, ListChecks, Home } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import ReactMarkdown from "react-markdown"
 import { TierSelector, TierType } from "@/components/TierSelector"
 import { PersonaSelector, PersonaType } from "@/components/PersonaSelector"
 import { CodeBlock, InlineCode } from "@/components/CodeBlock"
+import { LoadingScreen } from "@/components/LoadingScreen"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
 import {
@@ -244,14 +245,7 @@ export default function ChatPage() {
 
     // Show loading while checking auth
     if (isLoading) {
-        return (
-            <div className="flex h-screen bg-black items-center justify-center">
-                <div className="flex items-center gap-2 text-gray-400">
-                    <Sparkles className="animate-pulse text-red-400" size={20} />
-                    <span>Loading...</span>
-                </div>
-            </div>
-        )
+        return <LoadingScreen message="Loading chat..." />
     }
 
     const handleSend = async (text: string = input, quickActionPrefix?: string) => {
@@ -522,10 +516,17 @@ export default function ChatPage() {
             </aside>
 
             {/* Main Area */}
-            <main className="flex-1 flex flex-col w-full min-w-0">
+            <main className="flex-1 flex flex-col w-full min-w-0 bg-[#050505]">
                 {/* Header */}
-                <header className="h-14 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-white/5 bg-black/50 backdrop-blur-sm gap-2">
-                    <div className="flex items-center gap-2">
+                <header className="h-14 shrink-0 flex items-center justify-between px-3 sm:px-4 border-b border-white/5 glass">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                        {/* Home Button */}
+                        <Link
+                            href="/"
+                            className="p-2 hover:bg-white/10 rounded-lg transition-colors text-gray-400 hover:text-white"
+                        >
+                            <Home size={20} />
+                        </Link>
                         <button
                             onClick={() => setSidebarOpen(true)}
                             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -535,6 +536,7 @@ export default function ChatPage() {
                         <button
                             onClick={handleNewChat}
                             className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                            title="New Chat"
                         >
                             <Plus size={20} />
                         </button>
