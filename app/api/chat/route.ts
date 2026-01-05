@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { callWithFallback } from "@/lib/model-fallback"
 import { isValidTier, requiresSubscription, RaffiTechTier } from "@/lib/tier-config"
 import { ChatMessage } from "@/lib/openrouter"
-import { getPersonaSystemPrompt, PersonaType } from "@/components/PersonaSelector"
+import { getPersonaSystemPrompt, PersonaType } from "@/lib/persona-config"
 
 interface ChatRequest {
     message: string
