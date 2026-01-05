@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Send, Menu, Plus, MessageSquare, X, Settings, Code, FileText, Lightbulb, Mic, MicOff, AlertCircle, Sparkles, LogOut, Upload, Image as ImageIcon, Trash2, Languages, HelpCircle, Wrench, ListChecks, Home } from "lucide-react"
+import { Send, Menu, Plus, MessageSquare, X, Settings, Code, FileText, Lightbulb, Mic, MicOff, AlertCircle, Sparkles, LogOut, Upload, Image as ImageIcon, Trash2, Languages, HelpCircle, Wrench, ListChecks, Home, Download, LayoutTemplate, Camera, Terminal } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import ReactMarkdown from "react-markdown"
@@ -10,6 +10,11 @@ import { TierSelector, TierType } from "@/components/TierSelector"
 import { PersonaSelector, PersonaType } from "@/components/PersonaSelector"
 import { CodeBlock, InlineCode } from "@/components/CodeBlock"
 import { LoadingScreen } from "@/components/LoadingScreen"
+import { SmartTemplates } from "@/components/SmartTemplates"
+import { ExportChat } from "@/components/ExportChat"
+import { TextToSpeech } from "@/components/TextToSpeech"
+import { ImageAnalyzer } from "@/components/ImageAnalyzer"
+import { CodePlayground } from "@/components/CodePlayground"
 import { useAuth } from "@/lib/auth-context"
 import { useRouter } from "next/navigation"
 import {
@@ -63,6 +68,12 @@ export default function ChatPage() {
 
     // NEW: Quick actions visibility
     const [showQuickActions, setShowQuickActions] = useState(false)
+
+    // NEW: Feature modals
+    const [showTemplates, setShowTemplates] = useState(false)
+    const [showExport, setShowExport] = useState(false)
+    const [showImageAnalyzer, setShowImageAnalyzer] = useState(false)
+    const [showCodePlayground, setShowCodePlayground] = useState(false)
 
     // User tier state
     const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
@@ -556,13 +567,6 @@ export default function ChatPage() {
                             userTier={userProfile?.tier as TierType}
                         />
                     </div>
-
-                    {/* Current model indicator */}
-                    {currentModel && (
-                        <div className="hidden sm:block text-xs text-gray-600 truncate max-w-32">
-                            {currentModel.split('/').pop()}
-                        </div>
-                    )}
                 </header>
 
                 {/* Content */}
@@ -801,6 +805,40 @@ export default function ChatPage() {
                                         <Send size={18} className="sm:w-[20px] sm:h-[20px]" />
                                     </button>
                                 </div>
+
+                                {/* Features Toolbar */}
+                                <div className="flex items-center justify-center gap-2 mt-2">
+                                    <button
+                                        onClick={() => setShowTemplates(true)}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                    >
+                                        <LayoutTemplate size={14} />
+                                        <span className="hidden sm:inline">Templates</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setShowImageAnalyzer(true)}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                    >
+                                        <Camera size={14} />
+                                        <span className="hidden sm:inline">Image</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setShowCodePlayground(true)}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                    >
+                                        <Terminal size={14} />
+                                        <span className="hidden sm:inline">Code</span>
+                                    </button>
+                                    {messages.length > 0 && (
+                                        <button
+                                            onClick={() => setShowExport(true)}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                        >
+                                            <Download size={14} />
+                                            <span className="hidden sm:inline">Export</span>
+                                        </button>
+                                    )}
+                                </div>
                             </div>
 
                             <p className="text-center text-[11px] sm:text-xs text-gray-500 mt-3 font-light">
@@ -810,6 +848,34 @@ export default function ChatPage() {
                     </div>
                 </div>
             </main>
+
+            {/* Feature Modals */}
+            <SmartTemplates
+                isOpen={showTemplates}
+                onClose={() => setShowTemplates(false)}
+                onSelectTemplate={(prompt) => setInput(prompt)}
+            />
+
+            <ExportChat
+                isOpen={showExport}
+                onClose={() => setShowExport(false)}
+                messages={messages}
+                sessionTitle="RaffiTech AI Chat"
+            />
+
+            <ImageAnalyzer
+                isOpen={showImageAnalyzer}
+                onClose={() => setShowImageAnalyzer(false)}
+                onAnalyze={(prompt) => {
+                    setInput(prompt)
+                    setShowImageAnalyzer(false)
+                }}
+            />
+
+            <CodePlayground
+                isOpen={showCodePlayground}
+                onClose={() => setShowCodePlayground(false)}
+            />
         </div>
     )
 }
